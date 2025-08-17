@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}{{ problem.title }} - Python学習サイト{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <!-- 問題の詳細 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">{{ problem.title }}</h3>
+                    <div>
+                        <span class="badge level-{{ problem.level }} me-2">レベル{{ problem.level }}</span>
+                        <span class="badge bg-light text-dark">{{ problem.category }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="lead mb-4">{{ problem.description }}</p>
+                
+                <!-- コードテンプレート -->
+                <div class="code-block">
+                    <pre><code>{{ problem.code_template }}</code></pre>
+                </div>
+                
+                <!-- ヒント -->
+                <div class="hint-box">
+                    <h6 class="mb-2">
+                        <i class="fas fa-lightbulb me-2"></i>ヒント
+                    </h6>
+                    <p class="mb-0">{{ problem.hint }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 回答入力 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>回答を入力してください
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="answerInput" class="form-label">回答:</label>
+                    <input type="text" class="form-control answer-input" id="answerInput" 
+                           placeholder="答えを入力してください">
+                </div>
+                <div class="text-center">
+                    <button type="button" class="btn btn-primary btn-lg" onclick="submitAnswer()">
+                        <i class="fas fa-paper-plane me-2"></i>回答を送信
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 結果表示エリア -->
+        <div id="resultArea" style="display: none;">
+            <div class="card">
+                <div class="card-body">
+                    <div id="resultContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- 進捗状況 -->
+        <div class="card mb-3">
+            <div class="card-body text-center">
+                <h6 class="card-title">現在の進捗</h6>
+                <div class="progress-circle" data-progress="{{ (progress.completed|length / 15 * 100) | round }}">
+                    {{ (progress.completed|length / 15 * 100) | round }}%
+                </div>
+                <p class="mb-2">
+                    <strong>{{ progress.completed|length }}</strong> / 15 問題完了
+                </p>
+                <p class="mb-0">
+                    <strong>獲得ポイント:</strong> {{ progress.score }}
+                </p>
+            </div>
+        </div>
+
+        <!-- ナビゲーション -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <h6 class="card-title">ナビゲーション</h6>
+                <div class="d-grid gap-2">
+                    <a href="/problems" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-list me-1"></i>問題一覧に戻る
+                    </a>
+                    <a href="/progress" class="btn btn-outline-success btn-sm">
+                        <i class="fas fa-chart-line me-1"></i>進捗を見る
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 学習のコツ -->
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title">
+                    <i class="fas fa-lightbulb me-2"></i>学習のコツ
+                </h6>
+                <ul class="list-unstyled mb-0 small">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        コードを実際に書いて試す
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        エラーメッセージを読む
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        分からない場合はヒントを見る
+                    </li>
+                    <li>
+                        <i class="fas fa-check text-success me-2"></i>
+                        解説をしっかり読む
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentProblemId = {{ problem.id }};
+
+function submitAnswer() {
+    const answer = document.getElementById('answerInput').value.trim();
+    
+    if (!answer) {
+        alert('回答を入力してください。');
+        return;
+    }
+    
+    // 送信ボタンを無効化
+    const submitBtn = document.querySelector('button[onclick="submitAnswer()"]');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>送信中...';
+    
+    // 回答を送信
+    fetch('/submit_answer', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            problem_id: currentProblemId,
+            answer: answer
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        showResult(data);
+        updateProgress(data.progress);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('エラーが発生しました。もう一度お試しください。');
+    })
+    .finally(() => {
+        // 送信ボタンを有効化
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>回答を送信';
+    });
+}
+
+function showResult(data) {
+    const resultArea = document.getElementById('resultArea');
+    const resultContent = document.getElementById('resultContent');
+    
+    if (data.correct) {
+        resultContent.innerHTML = `
+            <div class="text-center">
+                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                <h4 class="text-success">正解です！</h4>
+                <p class="text-muted">素晴らしい！正しく理解できています。</p>
+            </div>
+        `;
+    } else {
+        resultContent.innerHTML = `
+            <div class="text-center">
+                <i class="fas fa-times-circle fa-3x text-danger mb-3"></i>
+                <h4 class="text-danger">不正解です</h4>
+                <p class="text-muted">もう一度考えてみてください。</p>
+            </div>
+        `;
+    }
+    
+    // 解説を表示
+    if (data.explanation) {
+        resultContent.innerHTML += `
+            <div class="explanation-box mt-3">
+                <h6><i class="fas fa-info-circle me-2"></i>解説</h6>
+                <p class="mb-0">${data.explanation}</p>
+            </div>
+        `;
+    }
+    
+    // 次の問題へのリンク
+    resultContent.innerHTML += `
+        <div class="text-center mt-3">
+            <a href="/problems" class="btn btn-primary me-2">
+                <i class="fas fa-list me-1"></i>問題一覧に戻る
+            </a>
+            <button type="button" class="btn btn-outline-primary" onclick="resetProblem()">
+                <i class="fas fa-redo me-1"></i>もう一度挑戦
+            </button>
+        </div>
+    `;
+    
+    resultArea.style.display = 'block';
+    
+    // 結果エリアまでスクロール
+    resultArea.scrollIntoView({ behavior: 'smooth' });
+}
+
+function updateProgress(progress) {
+    // 進捗サークルを更新
+    const progressElements = document.querySelectorAll('[data-progress]');
+    progressElements.forEach(element => {
+        const percentage = Math.min((progress.completed.length / 15 * 100), 100);
+        element.style.setProperty('--progress', `${percentage * 3.6}deg`);
+        element.textContent = `${Math.round(percentage)}%`;
+    });
+    
+    // 進捗情報を更新
+    const progressTexts = document.querySelectorAll('.progress-circle + p');
+    progressTexts.forEach(text => {
+        if (text.textContent.includes('完了')) {
+            text.innerHTML = `<strong>${progress.completed.length}</strong> / 15 問題完了`;
+        }
+    });
+}
+
+function resetProblem() {
+    // 結果エリアを非表示
+    document.getElementById('resultArea').style.display = 'none';
+    
+    // 入力フィールドをクリア
+    document.getElementById('answerInput').value = '';
+    
+    // 入力フィールドにフォーカス
+    document.getElementById('answerInput').focus();
+}
+
+// Enterキーで回答送信
+document.getElementById('answerInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        submitAnswer();
+    }
+});
+
+// ページ読み込み時にプログレスサークルを初期化
+document.addEventListener('DOMContentLoaded', function() {
+    const progressElements = document.querySelectorAll('[data-progress]');
+    progressElements.forEach(element => {
+        const progress = parseInt(element.dataset.progress);
+        element.style.setProperty('--progress', `${progress * 3.6}deg`);
+    });
+});
+</script>
+{% endblock %}

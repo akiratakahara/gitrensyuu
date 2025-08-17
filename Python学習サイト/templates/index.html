@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}ホーム - Python学習サイト{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold text-primary mb-3">
+                <i class="fab fa-python me-3"></i>Python学習サイトへようこそ！
+            </h1>
+            <p class="lead text-muted">
+                段階的にPythonプログラミングを学んで、実践的なスキルを身につけましょう
+            </p>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="card h-100 text-center">
+                    <div class="card-body">
+                        <i class="fas fa-graduation-cap fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">段階的学習</h5>
+                        <p class="card-text">レベル1から3まで、自分のペースで学習できます</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 text-center">
+                    <div class="card-body">
+                        <i class="fas fa-code fa-3x text-success mb-3"></i>
+                        <h5 class="card-title">実践的な問題</h5>
+                        <p class="card-text">実際のコードを書いて、理解を深めましょう</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 text-center">
+                    <div class="card-body">
+                        <i class="fas fa-chart-line fa-3x text-warning mb-3"></i>
+                        <h5 class="card-title">進捗管理</h5>
+                        <p class="card-text">学習の進捗を可視化して、モチベーションを維持</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title mb-3">
+                    <i class="fas fa-rocket me-2"></i>学習を始めよう！
+                </h4>
+                <p class="card-text">
+                    以下のボタンから問題一覧に進んで、Pythonプログラミングの学習を始めましょう。
+                    基礎から応用まで、段階的に学ぶことができます。
+                </p>
+                <div class="text-center">
+                    <a href="/problems" class="btn btn-primary btn-lg">
+                        <i class="fas fa-play me-2"></i>問題一覧を見る
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h5 class="card-title mb-3">学習進捗</h5>
+                
+                <!-- プログレスサークル -->
+                <div class="progress-circle" data-progress="{{ (progress.completed|length / 15 * 100) | round }}">
+                    {{ (progress.completed|length / 15 * 100) | round }}%
+                </div>
+                
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="border-end">
+                            <h4 class="text-primary mb-1">{{ progress.completed|length }}</h4>
+                            <small class="text-muted">完了問題</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-success mb-1">{{ progress.score }}</h4>
+                        <small class="text-muted">獲得ポイント</small>
+                    </div>
+                </div>
+                
+                <hr class="my-3">
+                
+                <div class="text-start">
+                    <p class="mb-2">
+                        <strong>現在のレベル:</strong>
+                        <span class="badge level-{{ progress.current_level }} ms-2">
+                            レベル{{ progress.current_level }}
+                        </span>
+                    </p>
+                    <p class="mb-2">
+                        <strong>学習開始日:</strong><br>
+                        <small class="text-muted">{{ progress.start_date[:10] }}</small>
+                    </p>
+                </div>
+                
+                <div class="mt-3">
+                    <a href="/progress" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-chart-line me-1"></i>詳細を見る
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-body">
+                <h6 class="card-title">
+                    <i class="fas fa-lightbulb me-2"></i>学習のコツ
+                </h6>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        毎日少しずつ学習する
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        コードを実際に書いて試す
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        エラーを恐れずに挑戦する
+                    </li>
+                    <li>
+                        <i class="fas fa-check text-success me-2"></i>
+                        理解できない部分は何度も復習
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

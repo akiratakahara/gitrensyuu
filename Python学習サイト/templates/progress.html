@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block title %}学習進捗 - Python学習サイト{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">
+                <i class="fas fa-chart-line me-2"></i>学習進捗
+            </h2>
+            <button class="btn btn-outline-warning btn-sm" onclick="resetProgress()">
+                <i class="fas fa-redo me-1"></i>進捗をリセット
+            </button>
+        </div>
+
+        <!-- 進捗サマリー -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-tasks fa-2x text-primary mb-2"></i>
+                        <h4 class="text-primary">{{ progress.completed|length }}</h4>
+                        <p class="mb-0">完了問題</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-star fa-2x text-warning mb-2"></i>
+                        <h4 class="text-warning">{{ progress.score }}</h4>
+                        <p class="mb-0">獲得ポイント</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-trophy fa-2x text-success mb-2"></i>
+                        <h4 class="text-success">レベル{{ progress.current_level }}</h4>
+                        <p class="mb-0">現在のレベル</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 進捗バー -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-3">全体の進捗</h5>
+                <div class="progress mb-2" style="height: 25px;">
+                    <div class="progress-bar bg-success" role="progressbar" 
+                         style="width: {{ (progress.completed|length / 15 * 100) | round }}%"
+                         aria-valuenow="{{ (progress.completed|length / 15 * 100) | round }}" 
+                         aria-valuemin="0" aria-valuemax="100">
+                        {{ (progress.completed|length / 15 * 100) | round }}%
+                    </div>
+                </div>
+                <small class="text-muted">{{ progress.completed|length }} / 15 問題完了</small>
+            </div>
+        </div>
+
+        <!-- 完了した問題の詳細 -->
+        {% if completed_problems %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-check-circle me-2"></i>完了した問題
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    {% for problem in completed_problems %}
+                    <div class="col-md-6">
+                        <div class="card border-success">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="card-title mb-0">{{ problem.title }}</h6>
+                                    <span class="badge level-{{ problem.level }}">{{ problem.level }}</span>
+                                </div>
+                                <p class="card-text small text-muted mb-2">
+                                    {{ problem.description[:60] }}{% if problem.description|length > 60 %}...{% endif %}
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-light text-dark">{{ problem.category }}</span>
+                                    <a href="/problem/{{ problem.id }}" class="btn btn-outline-success btn-sm">
+                                        <i class="fas fa-redo me-1"></i>復習
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-rocket fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">まだ問題を解いていません</h5>
+                <p class="text-muted">最初の問題に挑戦してみましょう！</p>
+                <a href="/problems" class="btn btn-primary">
+                    <i class="fas fa-play me-2"></i>問題一覧を見る
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+        <!-- 学習統計 -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <h6 class="card-title">
+                    <i class="fas fa-chart-pie me-2"></i>学習統計
+                </h6>
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="border-end">
+                            <h5 class="text-primary mb-1">{{ (progress.completed|length / 15 * 100) | round }}%</h5>
+                            <small class="text-muted">完了率</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <h5 class="text-success mb-1">{{ progress.current_level }}</h5>
+                        <small class="text-muted">現在レベル</small>
+                    </div>
+                </div>
+                
+                <hr class="my-3">
+                
+                <div class="text-start">
+                    <p class="mb-2">
+                        <strong>学習開始日:</strong><br>
+                        <small class="text-muted">{{ progress.start_date[:10] }}</small>
+                    </p>
+                    <p class="mb-2">
+                        <strong>平均ポイント:</strong><br>
+                        <small class="text-muted">
+                            {% if progress.completed|length > 0 %}
+                                {{ (progress.score / progress.completed|length) | round(1) }}
+                            {% else %}
+                                0
+                            {% endif %}
+                        </small>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- レベル別進捗 -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <h6 class="card-title">
+                    <i class="fas fa-layer-group me-2"></i>レベル別進捗
+                </h6>
+                
+                <!-- レベル1 -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="small">レベル1: 基礎編</span>
+                        <span class="small">
+                            {% set level1_count = completed_problems | selectattr('level', 'equalto', 1) | list | length %}
+                            {{ level1_count }}/5
+                        </span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-success" style="width: {{ (level1_count / 5 * 100) | round }}%"></div>
+                    </div>
+                </div>
+                
+                <!-- レベル2 -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="small">レベル2: 中級編</span>
+                        <span class="small">
+                            {% set level2_count = completed_problems | selectattr('level', 'equalto', 2) | list | length %}
+                            {{ level2_count }}/5
+                        </span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-warning" style="width: {{ (level2_count / 5 * 100) | round }}%"></div>
+                    </div>
+                </div>
+                
+                <!-- レベル3 -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="small">レベル3: 上級編</span>
+                        <span class="small">
+                            {% set level3_count = completed_problems | selectattr('level', 'equalto', 3) | list | length %}
+                            {{ level3_count }}/5
+                        </span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-danger" style="width: {{ (level3_count / 5 * 100) | round }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 次の目標 -->
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title">
+                    <i class="fas fa-bullseye me-2"></i>次の目標
+                </h6>
+                {% if progress.current_level == 1 %}
+                    <p class="small mb-2">レベル2に進むには、あと <strong>{{ 5 - (completed_problems | selectattr('level', 'equalto', 1) | list | length) }}</strong> 問解く必要があります。</p>
+                {% elif progress.current_level == 2 %}
+                    <p class="small mb-2">レベル3に進むには、あと <strong>{{ 10 - progress.completed|length }}</strong> 問解く必要があります。</p>
+                {% else %}
+                    <p class="small mb-2">おめでとうございます！すべてのレベルをクリアしました！</p>
+                {% endif %}
+                
+                <div class="text-center mt-3">
+                    <a href="/problems" class="btn btn-primary btn-sm">
+                        <i class="fas fa-play me-1"></i>次の問題に挑戦
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function resetProgress() {
+    if (confirm('本当に進捗をリセットしますか？この操作は取り消せません。')) {
+        fetch('/reset_progress')
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('エラーが発生しました。');
+            });
+    }
+}
+</script>
+{% endblock %}

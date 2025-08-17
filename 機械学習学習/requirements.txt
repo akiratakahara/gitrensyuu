@@ -1,0 +1,31 @@
+# データ処理・分析
+pandas>=1.5.0
+numpy>=1.21.0
+
+# 可視化
+matplotlib>=3.5.0
+seaborn>=0.11.0
+plotly>=5.0.0
+
+# 機械学習
+scikit-learn>=1.1.0
+
+# 深層学習
+tensorflow>=2.10.0
+keras>=2.10.0
+
+# Jupyter環境
+jupyter>=1.0.0
+ipykernel>=6.0.0
+
+# その他の便利なライブラリ
+scipy>=1.9.0
+statsmodels>=0.13.0
+xgboost>=1.6.0
+lightgbm>=3.3.0
+
+# 開発用
+pytest>=7.0.0
+black>=22.0.0
+flake8>=5.0.0
+

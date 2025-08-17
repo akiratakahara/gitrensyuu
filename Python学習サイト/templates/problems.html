@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}問題一覧 - Python学習サイト{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">
+        <i class="fas fa-list me-2"></i>問題一覧
+    </h2>
+    <div>
+        <span class="badge bg-primary me-2">完了: {{ progress.completed|length }}/15</span>
+        <span class="badge bg-success">レベル{{ progress.current_level }}</span>
+    </div>
+</div>
+
+<!-- レベル別の問題表示 -->
+{% for level in [1, 2, 3] %}
+    {% if level in level_problems %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <span class="badge level-{{ level }} me-2">レベル{{ level }}</span>
+                    {% if level == 1 %}
+                        基礎編 - 変数・データ型・制御構文
+                    {% elif level == 2 %}
+                        中級編 - 関数・ループ・データ構造
+                    {% else %}
+                        上級編 - クラス・ジェネレータ・デコレータ
+                    {% endif %}
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    {% for problem in level_problems[level] %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 {% if problem.id in progress.completed %}border-success{% endif %}">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="card-title mb-0">{{ problem.title }}</h6>
+                                        {% if problem.id in progress.completed %}
+                                            <i class="fas fa-check-circle text-success"></i>
+                                        {% endif %}
+                                    </div>
+                                    <p class="card-text small text-muted mb-2">
+                                        {{ problem.description[:50] }}{% if problem.description|length > 50 %}...{% endif %}
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge bg-light text-dark">{{ problem.category }}</span>
+                                        <a href="/problem/{{ problem.id }}" class="btn btn-primary btn-sm">
+                                            {% if problem.id in progress.completed %}
+                                                <i class="fas fa-redo me-1"></i>復習
+                                            {% else %}
+                                                <i class="fas fa-play me-1"></i>開始
+                                            {% endif %}
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endfor %}
+
+<!-- 学習の進め方 -->
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">
+            <i class="fas fa-lightbulb me-2"></i>学習の進め方
+        </h5>
+        <div class="row">
+            <div class="col-md-4">
+                <h6 class="text-primary">レベル1: 基礎編</h6>
+                <p class="small">変数、データ型、基本的な制御構文を学びます。Pythonの基本をしっかり身につけましょう。</p>
+            </div>
+            <div class="col-md-4">
+                <h6 class="text-warning">レベル2: 中級編</h6>
+                <p class="small">関数、ループ、データ構造を学びます。より実践的なプログラミングができるようになります。</p>
+            </div>
+            <div class="col-md-4">
+                <h6 class="text-danger">レベル3: 上級編</h6>
+                <p class="small">クラス、ジェネレータ、デコレータなど、高度な概念を学びます。</p>
+            </div>
+        </div>
+        
+        <div class="alert alert-info mt-3">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>ヒント:</strong> 各問題にはヒントと解説が用意されています。分からない場合は、まずヒントを見てから挑戦してみてください。
+        </div>
+    </div>
+</div>
+{% endblock %}
